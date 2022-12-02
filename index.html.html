@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@200&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@1,300&display=swap" rel="stylesheet">
+   
+
+    <link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="img-box"></div>
+        <h1>Expense Tracker:</h1>
+
+    </div>
+    
+
+    <form onsubmit="saveToServer(event)">
+        
+        <div class="tracker">
+            <label>Choose Expense Amount:</label>
+            <input id='expense' type="number" name="expenseAmount" placeholder="Enter Amount in $" required />
+            <label>Description:</label>
+            <input id='description' type="text" name="description" placeholder="Item Name..." required />
+            <label for="option">Choose Category:</label>
+            <select name="category" id="option">
+                <option value="oil">Oil</option>
+                <option value="Food">Food</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Movies">Movies</option>
+                <option value="Garments">Garments</option>
+            </select>
+            <button class="btn">Add</button>
+
+        </div>
+
+
+
+
+    </form>
+
+    <ul id="allExp"></ul>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.3/axios.min.js"></script>
+
+
+
+
+    <script>
+
+        function saveToServer(event) {
+            event.preventDefault();
+
+            let expAmount = document.getElementById("expense").value;
+
+            let expDescription = document.getElementById("description").value;
+
+            let expCategory = document.getElementById("option").value;
+
+
+
+            let expDetails = {
+                expAmount, expDescription, expCategory
+            }
+
+
+            async function postRequest() {
+
+                try {
+                    let postResponse = await axios.post("https://crudcrud.com/api/9797e91765a941a590dae05e8de79c95/Expense-Tracker", expDetails);
+
+                    showExpenseDetailsOnScreen(postResponse.data);
+
+                }
+                catch (error) {
+                    document.body.innerHTML += `<h4>something Went Wrong! in Post request error:${error} </h4>`;
+                }
+
+            }
+            postRequest();
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+        function showExpenseDetailsOnScreen(exp) {
+
+            document.getElementById("expense").value = "";
+            document.getElementById("description").value = "";
+            document.getElementById("option").value = "";
+
+
+
+
+            const parent = document.getElementById("allExp");
+            const child = `<li class='list' id=${exp._id}>${exp.expAmount} $ for ${exp.expDescription} in ${exp.expCategory}<button class='btn' onclick=delete_expTracker('${exp._id}')>Delete</button><button class='btn' onclick=editExpTracker('${exp._id}','${exp.expAmount}','${exp.expDescription}','${exp.expCategory}')>Edit</button></li>`
+            parent.innerHTML = parent.innerHTML + child;
+
+
+
+
+        }
+
+
+        //    on delete:---->>
+        function delete_expTracker(expId) {
+
+
+            async function deleteRequest() {
+
+                try {
+                    await axios.delete(`https://crudcrud.com/api/9797e91765a941a590dae05e8de79c95/Expense-Tracker/${expId}`);
+
+                    removeExpTrackerFromScreen(expId);
+
+
+
+                }
+                catch (error) {
+                    document.body.innerHTML += `<h4>something Went Wrong! in Delete request error:${error} </h4>`;
+                }
+
+            }
+            deleteRequest();
+
+
+        }
+
+
+
+
+
+        function removeExpTrackerFromScreen(expId) {
+            let parentElem = document.getElementById("allExp");
+            let childElem = document.getElementById(expId);
+
+            if (childElem) {
+                parentElem.removeChild(childElem);
+            }
+
+        }
+
+
+        //edit:---->>
+        function editExpTracker(expId, amount, descrip, cat) {
+            document.getElementById("expense").value = amount;
+            document.getElementById("description").value = descrip;
+            document.getElementById("option").value = cat;
+
+
+            delete_expTracker(expId);
+
+
+
+
+
+        }
+
+
+
+
+        //On-browserRefresh:---->>
+        window.addEventListener('DOMContentLoaded', () => {
+
+
+            async function getRequest() {
+
+                try {
+                    let getResponse = await axios.get("https://crudcrud.com/api/9797e91765a941a590dae05e8de79c95/Expense-Tracker");
+
+
+                    for (let i = 0; i < getResponse.data.length; i++) {
+                        showExpenseDetailsOnScreen(getResponse.data[i]);
+
+                    }
+
+
+
+                }
+                catch (error) {
+                    document.body.innerHTML += `<h4>something Went Wrong! on Browser refresh error:${error} </h4>`;
+                }
+
+            }
+            getRequest();
+
+
+
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+
+
+
+
+
+
+</body>
+
+</html>
